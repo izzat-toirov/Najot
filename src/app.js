@@ -7,6 +7,8 @@ import { connectDB } from './config/db.js';
 import GroupController from './routes/group.route.js';
 import StaffController from './routes/staff.route.js';
 import StudentController from './routes/staff.route.js';
+import CourseController from './routes/course.route.js';
+import Staff_CourseController from './routes/staff_course.route.js';
 import logger from './utils/logger/logger.js';
 import upload from './utils/multer.js';
 import { swaggerSpec, swaggerUi } from './docs/swagger.js';
@@ -42,6 +44,8 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/groups', GroupController);
 app.use('/staff', StaffController);
 app.use('/students', StudentController);
+app.use('/course', CourseController);
+app.use('/staff_course', StaffController);
 
 process.on('uncaughtException', (err) => {
   if (err) console.log(`Uncaught exception: ${err}`);
