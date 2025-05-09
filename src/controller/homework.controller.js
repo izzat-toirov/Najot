@@ -1,4 +1,4 @@
-import Staff_Course from "../modules/staff_course.module.js";
+import Homework from "../modules/homework.module.js";
 import Staff from "../modules/staff.module.js";
 import { decode } from "../utils/bcrypt.js";
 import { catchError } from '../utils/error.response.js';
@@ -6,26 +6,25 @@ import {
   generatorAccessToken,
   generatorRefreshToken,
 } from '../utils/generator.token.js';
-import { staffCourseValid } from "../validation/staff_course.valid.js";
 import { refTokenWriteCookie } from "../utils/wtite-cookie.js";
+import { homeworkValidation } from "../validation/homework.valid.js";
 
-
-export class Staff_CourseController {
+export class Homework_Controller {
   async signIn(req, res) {
     try {
       const { phone, password } = req.body;
-      const staff_Course = await Staff.findOne({ phone });
+      const homework = await Staff.findOne({ phone });
 
-      if (!staff_Course) {
-        return catchError(res, 404, 'staff_Course not found');
+      if (!homework) {
+        return catchError(res, 404, 'homework not found');
       }
 
-      const isMatchPassword = decode(password, staff_Course.password);
+      const isMatchPassword = decode(password, homework.password);
 
       if (!isMatchPassword) {
         return catchError(res, 400, 'Invalid password');
       }
-      const payload = { id: staff_Course._id, role: staff_Course.role };
+      const payload = { id: homework._id, role: homework.role };
       const accessToken = generatorAccessToken(payload);
       const refreshToken = generatorRefreshToken(payload);
       refTokenWriteCookie(res, 'refreshToken', refreshToken);
@@ -40,16 +39,16 @@ export class Staff_CourseController {
   }
   async create(req, res) {
     try {
-      const { error, value } = staffCourseValid(req.body);
+      const { error, value } = homeworkValidation(req.body);
       if (error) {
         return catchError(res, 400, error);
       }
-      const newstaff_Course = await Staff_Course.create(value);
+      const newhomework = await Homework.create(value);
 
       return res.status(201).json({
         statusCode: 201,
         message: 'success',
-        data: newstaff_Course,
+        data: newhomework,
       });
     } catch (error) {
       return catchError(res, 500, error.message);
@@ -57,11 +56,11 @@ export class Staff_CourseController {
   }
   async getAll(_, res) {
     try {
-      const staff_Course = await Staff_Course.find().populate('staff_id').populate('course_id');
+      const homework = await Homework.find().populate('student_id').populate('lesson_of_courses_id');
       return res.status(200).json({
         statusCode: 200,
         message: 'success',
-        data: staff_Course,
+        data: homework,
       });
     } catch (error) {
       return catchError(res, 500, error.message);
@@ -70,11 +69,11 @@ export class Staff_CourseController {
   async getById(req, res) {
     try {
       const { id } = req.params;
-      const staff_Course = await Staff_CourseController.getId(res, id);
+      const homework = await Homework_Controller.getId(res, id);
       return res.status(200).json({
         statusCode: 200,
         message: 'success',
-        data: staff_Course,
+        data: homework,
       });
     } catch (error) {
       return catchError(res, 500, error.message);
@@ -83,8 +82,8 @@ export class Staff_CourseController {
   async uptade(req, res) {
     try {
       const { id } = req.params;
-      await staff_CourseController.getId(res, id);
-      const uptade = await Staff_Course.findByIdAndUpdate(id, req.body, {
+      await Homework_Controller.getId(res, id);
+      const uptade = await Homework.findByIdAndUpdate(id, req.body, {
         new: true,
       });
       return res.status(200).json({
@@ -99,8 +98,8 @@ export class Staff_CourseController {
   async delete(req, res) {
     try {
       const { id } = req.params;
-      await staff_CourseController.getId(res, id);
-      await Staff_Course.findByIdAndDelete(id);
+      await Homework_Controller.getId(res, id);
+      await Homework.findByIdAndDelete(id);
       return res.status(200).json({
         sratusCode: 200,
         message: 'success',
@@ -112,9 +111,9 @@ export class Staff_CourseController {
   }
   static async getId(res, id) {
     try {
-      const course = await Staff_Course.findById(id);
+      const course = await Homework.findById(id);
       if (!course) {
-        return catchError(res, 404, 'Doctor not found by id');
+        return catchError(res, 404, 'Homework not found by id');
       }
       return course;
     } catch (error) {

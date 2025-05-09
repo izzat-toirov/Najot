@@ -1,16 +1,21 @@
-// utils/multer.js
 import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 
-// Fayl yo'lini aniqlash (ESM uchun)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Storage sozlamasi
+const uploadDir = path.join(__dirname, '/uploads');
+
+// 📁 Papka mavjudligini tekshirib, yo'q bo'lsa yaratish
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, '../uploads')); // uploads papkasi project rootda
+    cb(null, uploadDir);
   },
   filename: function (req, file, cb) {
     const ext = path.extname(file.originalname);

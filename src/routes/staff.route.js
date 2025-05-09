@@ -2,6 +2,7 @@ import express from 'express';
 import { StaffController } from '../controller/staff.controller.js';
 import { JwtAuthGuard } from '../middleware/jwt-auth.guard.js';
 import { AdminGuard } from '../middleware/admin.guard.js';
+import { SuperAdminGuard } from '../middleware/superadmin.guard.js';
 
 const router = express.Router();
 const controller = new StaffController();
@@ -18,6 +19,7 @@ const body = [
 ];
 
 router
+  .post('/superadmin', controller.createSuperAdmin)
   .post('/', JwtAuthGuard, AdminGuard, controller.create)
   .post('/signIn', controller.signIn)
   .post('/confirm', controller.confirmSigIn)

@@ -6,6 +6,7 @@ import {
   generatorAccessToken,
   generatorRefreshToken,
 } from '../utils/generator.token.js';
+import { refTokenWriteCookie } from '../utils/wtite-cookie.js';
 import { groupValid } from '../validation/group.valid.js';
 
 export class GroupController {
@@ -26,11 +27,12 @@ export class GroupController {
       const payload = { id: staff._id, role: staff.role };
       const accessToken = generatorAccessToken(payload);
       const refreshToken = generatorRefreshToken(payload);
+      refTokenWriteCookie(res, 'refreshToken', refreshToken);
+      
       return res.status(200).json({
         statusCode: 200,
         message: 'Login successful',
-        data: accessToken,
-        refreshToken,
+        data: accessToken
       });
     } catch (error) {
       return catchError(res, 500, error.message);

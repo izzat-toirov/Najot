@@ -6,6 +6,8 @@ import {
   generatorAccessToken,
   generatorRefreshToken,
 } from '../utils/generator.token.js';
+import { sendEmail } from "../utils/sendMail.js";
+import { refTokenWriteCookie } from "../utils/wtite-cookie.js";
 import { courseValid } from "../validation/couse.valid.js";
 
 export class CourseController {
@@ -26,11 +28,11 @@ export class CourseController {
       const payload = { id: course._id, role: course.role };
       const accessToken = generatorAccessToken(payload);
       const refreshToken = generatorRefreshToken(payload);
+      refTokenWriteCookie(res, 'refreshToken', refreshToken);
       return res.status(200).json({
         statusCode: 200,
         message: 'Login successful',
-        data: accessToken,
-        refreshToken,
+        data: accessToken
       });
     } catch (error) {
       return catchError(res, 500, error.message);
@@ -106,6 +108,44 @@ export class CourseController {
       });
     } catch (error) {
       return catchError(res, 500, error.message);
+    }
+  }
+  async enroll(req, res){
+    try {
+      const courseId = req.params.id;
+      const userId = req.user.id;
+
+      const course = await Course.findById(courseId);
+      if (!course) {
+        return catchError(res, 404, 'Course not found');
+      }
+
+      const isEnrolled = course.students.some(studentId =>
+        studentId.toString() === userId.toString()
+      );
+      
+      if (isEnrolled) {
+        return catchError(res, 400, 'User already enrolled in this course');
+      }
+
+      const user = await Course.findById(userId);
+    if (user && user.email) {
+      await sendEmail(
+        user.email,
+        'Kursga muvaffaqiyatli yozildingiz',
+        `Hurmatli ${user.fullName}, siz "${course.title}" kursiga muvaffaqiyatli yozildingiz.`
+      );
+    }
+
+      course.students.push(userId);
+      await course.save();
+
+      return res.status(200).json({
+        message: 'Successfully enrolled in course',
+        course,
+      });
+    } catch (error) {
+      return catchError(res, 500, error.message)
     }
   }
   static async getId(res, id) {

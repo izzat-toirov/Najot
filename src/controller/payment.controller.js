@@ -1,4 +1,4 @@
-import Staff_Course from "../modules/staff_course.module.js";
+import Payment from "../modules/payment.module.js";
 import Staff from "../modules/staff.module.js";
 import { decode } from "../utils/bcrypt.js";
 import { catchError } from '../utils/error.response.js';
@@ -6,26 +6,25 @@ import {
   generatorAccessToken,
   generatorRefreshToken,
 } from '../utils/generator.token.js';
-import { staffCourseValid } from "../validation/staff_course.valid.js";
 import { refTokenWriteCookie } from "../utils/wtite-cookie.js";
+import { paymentValidation } from "../validation/payment.valid.js";
 
-
-export class Staff_CourseController {
+export class Payment_Controller {
   async signIn(req, res) {
     try {
       const { phone, password } = req.body;
-      const staff_Course = await Staff.findOne({ phone });
+      const payment = await Staff.findOne({ phone });
 
-      if (!staff_Course) {
-        return catchError(res, 404, 'staff_Course not found');
+      if (!payment) {
+        return catchError(res, 404, 'payment not found');
       }
 
-      const isMatchPassword = decode(password, staff_Course.password);
+      const isMatchPassword = decode(password, payment.password);
 
       if (!isMatchPassword) {
         return catchError(res, 400, 'Invalid password');
       }
-      const payload = { id: staff_Course._id, role: staff_Course.role };
+      const payload = { id: payment._id, role: payment.role };
       const accessToken = generatorAccessToken(payload);
       const refreshToken = generatorRefreshToken(payload);
       refTokenWriteCookie(res, 'refreshToken', refreshToken);
@@ -40,16 +39,16 @@ export class Staff_CourseController {
   }
   async create(req, res) {
     try {
-      const { error, value } = staffCourseValid(req.body);
+      const { error, value } = paymentValidation(req.body);
       if (error) {
         return catchError(res, 400, error);
       }
-      const newstaff_Course = await Staff_Course.create(value);
+      const newpayment = await Payment.create(value);
 
       return res.status(201).json({
         statusCode: 201,
         message: 'success',
-        data: newstaff_Course,
+        data: newpayment,
       });
     } catch (error) {
       return catchError(res, 500, error.message);
@@ -57,11 +56,11 @@ export class Staff_CourseController {
   }
   async getAll(_, res) {
     try {
-      const staff_Course = await Staff_Course.find().populate('staff_id').populate('course_id');
+      const payment = await Payment.find().populate('enrollment_id');
       return res.status(200).json({
         statusCode: 200,
         message: 'success',
-        data: staff_Course,
+        data: payment,
       });
     } catch (error) {
       return catchError(res, 500, error.message);
@@ -70,11 +69,11 @@ export class Staff_CourseController {
   async getById(req, res) {
     try {
       const { id } = req.params;
-      const staff_Course = await Staff_CourseController.getId(res, id);
+      const payment = await Payment_Controller.getId(res, id);
       return res.status(200).json({
         statusCode: 200,
         message: 'success',
-        data: staff_Course,
+        data: payment,
       });
     } catch (error) {
       return catchError(res, 500, error.message);
@@ -83,8 +82,8 @@ export class Staff_CourseController {
   async uptade(req, res) {
     try {
       const { id } = req.params;
-      await staff_CourseController.getId(res, id);
-      const uptade = await Staff_Course.findByIdAndUpdate(id, req.body, {
+      await Payment_Controller.getId(res, id);
+      const uptade = await Payment.findByIdAndUpdate(id, req.body, {
         new: true,
       });
       return res.status(200).json({
@@ -99,8 +98,8 @@ export class Staff_CourseController {
   async delete(req, res) {
     try {
       const { id } = req.params;
-      await staff_CourseController.getId(res, id);
-      await Staff_Course.findByIdAndDelete(id);
+      await Payment_Controller.getId(res, id);
+      await Payment.findByIdAndDelete(id);
       return res.status(200).json({
         sratusCode: 200,
         message: 'success',
@@ -112,9 +111,9 @@ export class Staff_CourseController {
   }
   static async getId(res, id) {
     try {
-      const course = await Staff_Course.findById(id);
+      const course = await Payment.findById(id).populate('enrollment_id');
       if (!course) {
-        return catchError(res, 404, 'Doctor not found by id');
+        return catchError(res, 404, 'payment not found by id');
       }
       return course;
     } catch (error) {

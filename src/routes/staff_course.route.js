@@ -1,8 +1,8 @@
 import express from 'express';
-import { staff_CourseController } from '../controller/staff_couse.controller.js';
+import { Staff_CourseController } from '../controller/staff_couse.controller.js';
 
 const router = express.Router();
-const controller = new staff_CourseController();
+const controller = new Staff_CourseController();
 
 router
   .post('/', controller.create)

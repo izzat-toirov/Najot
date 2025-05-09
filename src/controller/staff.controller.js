@@ -10,8 +10,35 @@ import { otpGenerator } from '../utils/otp-generator.js';
 import { transporter } from '../utils/mailer.js';
 import { getCache, setCache } from '../utils/cache.js';
 import { refTokenWriteCookie } from '../utils/wtite-cookie.js';
+import { superValidator } from '../validation/superadmin.valid.js';
 
 export class StaffController {
+  async createSuperAdmin(req, res){
+    try {
+      const { error, value } = superValidator(req.body);
+      if (error) {
+        return catchError(res, 400, error);
+      }
+      const { username, password } = value;
+      const checkSuperAdmin = await Staff.findOne({ role: 'superadmin' });
+      if (checkSuperAdmin) {
+        return catchError(res, 409, 'Super admin already exist');
+      }
+      const hashedPassword = await encode(password, 7);
+      const superadmin = await Staff.create({
+        username,
+        hashedPassword,
+        role: 'superadmin',
+      });
+      return res.status(201).json({
+        statusCode: 201,
+        message: 'success',
+        data: superadmin,
+      });
+    } catch (error) {
+      return catchError(res, 500, error.message);
+    }
+  }
   async create(req, res) {
     try {
       const { error, value } = staffValid(req.body);

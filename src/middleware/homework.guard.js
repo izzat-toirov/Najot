@@ -1,10 +1,10 @@
 import { catchError } from '../utils/error.response.js';
 
-export const AdminGuard = (req, res, next) => {
+export const HomeworkGuard = (req, res, next) => {
   try {
     const user = req?.user;
     
-    if (user.role === 'superadmin' || user.role === 'admin') {
+    if (user.role === 'teacher' || user.role === 'student') {
       return next();
     } else {
       return catchError(res, 403, 'Forbiddden user');
